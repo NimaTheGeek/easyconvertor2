@@ -14,6 +14,11 @@ import android.view.View;
 import android.provider.MediaStore.Files.FileColumns;
 import android.widget.ImageView;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -147,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             }
             imageList = null;
             document.close();
-            promptForNextAction();
+           // promptForNextAction();
 
         }
     }
