@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">easy convertor</string>
+    <string name="title_activity_gallery_selection">gallerySelection</string>
+    <string name="title_activity_camera_selection">cameraSelection</string>
+</resources>
