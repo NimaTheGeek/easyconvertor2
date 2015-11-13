@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.sledd.helloworld";
     private static final String TAG = "MainActivity";
     private static final int PICK_IMAGE_REQUEST_CODE = 1;
+    private static final int TAKE_PICTURE_REQUEST_CODE = 2;
     private File myPDF;
     private static LinkedList<Uri> imageList;
     @Override
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     public void btnCamHandler(View view) {
 
         Intent x = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivity(x);
+        startActivityForResult(x, TAKE_PICTURE_REQUEST_CODE);
 
     }
 
@@ -80,7 +81,26 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "This the length of the list: " + imageList.size());
 
 
+        } else if (requestCode == TAKE_PICTURE_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null )
+        {
+            Uri uri = data.getData();
+
+            if (imageList == null)
+                imageList = new LinkedList<>();
+
+            imageList.add(uri);
+
+            Log.e(TAG, "Added image from camera!");
         }
+        else {
+            Log.e(TAG, "oops");
+            Log.e(TAG, Integer.toString(requestCode));
+            Log.e(TAG, Integer.toString(resultCode) + " " +  Integer.toString(RESULT_OK) + " " + Integer.toString(RESULT_CANCELED));
+            Log.e(TAG, data == null ? "data is null" : "data is not null");
+            Log.e(TAG, data.getData() == null ? "data.getData() is null" : "data.getData() is not null");
+
+        }
+
     }
 
 
