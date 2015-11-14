@@ -13,22 +13,27 @@ import android.util.Log;
 import android.view.View;
 import android.provider.MediaStore.Files.FileColumns;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import net.yazeed44.imagepicker.model.ImageEntry;
+import net.yazeed44.imagepicker.util.Picker;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Picker.PickListener {
 
 
 
@@ -38,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAKE_PICTURE_REQUEST_CODE = 2;
     private File myPDF;
     private static LinkedList<Uri> imageList;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,11 +56,16 @@ public class MainActivity extends AppCompatActivity {
         //Intent i = new Intent(getApplicationContext(), gallerySelection.class);
         //startActivity(i);
 
+        // code for old image selection
+        /*
         Intent i = new Intent();
         i.setType("image/*");
         i.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(i, "Select a Picture!"), PICK_IMAGE_REQUEST_CODE);
+        */
 
+        //code for new gallery
+        pickImages();
 
     }
 
@@ -65,6 +77,38 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void pickImages(){
+
+        //You can change many settings in builder like limit , Pick mode and colors
+        new Picker.Builder(this, this ,R.style.AppTheme_NoActionBar)
+                .build()
+                .startActivity();
+
+    }
+
+    // button listener for converting images to pdf file
+    public void onConvertPdfClick(View view) throws DocumentException, java.io.IOException
+    {
+        createPdf();
+    }
+
+    // listeners for multi image picker
+    @Override
+    public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
+       // mSelectedImages = images;
+        // call adaptor here for listview
+        Log.d(TAG, "Picked images  " + images.toString());
+    }
+
+    @Override
+    public void onCancel() {
+        Log.i(TAG, "User canceled picker activity");
+        Toast.makeText(this, "User canceld picker activtiy", Toast.LENGTH_SHORT).show();
+
+    }
+
+
+    // on activity result for old gallery and camera code (possibly obsolete
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
@@ -83,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
         } else if (requestCode == TAKE_PICTURE_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null )
         {
+            // data.getData() is null here
             Uri uri = data.getData();
 
             if (imageList == null)
@@ -97,17 +142,13 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, Integer.toString(requestCode));
             Log.e(TAG, Integer.toString(resultCode) + " " +  Integer.toString(RESULT_OK) + " " + Integer.toString(RESULT_CANCELED));
             Log.e(TAG, data == null ? "data is null" : "data is not null");
-            Log.e(TAG, data.getData() == null ? "data.getData() is null" : "data.getData() is not null");
+            //Log.e(TAG, data.getData() == null ? "data.getData() is null" : "data.getData() is not null");
 
         }
 
     }
 
 
-    public void onConvertPdfClick(View view) throws DocumentException, java.io.IOException
-    {
-        createPdf();
-    }
 
     public void createPdf() throws  DocumentException, java.io.IOException
     {
