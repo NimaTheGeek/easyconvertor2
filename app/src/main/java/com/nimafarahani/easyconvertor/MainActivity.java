@@ -9,12 +9,17 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.provider.MediaStore.Files.FileColumns;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ImageView;
+//<<<<<<< Updated upstream
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
@@ -22,6 +27,10 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import net.yazeed44.imagepicker.model.ImageEntry;
 import net.yazeed44.imagepicker.util.Picker;
+//=======
+import com.itextpdf.text.Document;
+
+//>>>>>>> Stashed changes
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private static final int TAKE_PICTURE_REQUEST_CODE = 2;
     private File myPDF;
     private static LinkedList<Uri> imageList;
+    private ArrayList<ImageEntry> mSelectedImages;
+    private RecyclerView mImageSampleRecycler;
+
 
 
     @Override
@@ -95,9 +107,16 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     // listeners for multi image picker
     @Override
     public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
-       // mSelectedImages = images;
         // call adaptor here for listview
+
+        mSelectedImages = images;
+        setupImageSamples();
         Log.d(TAG, "Picked images  " + images.toString());
+    }
+
+
+    private void setupImageSamples() {
+        mImageSampleRecycler.setAdapter(new ImageSamplesAdapter());
     }
 
     @Override
@@ -106,6 +125,56 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         Toast.makeText(this, "User canceld picker activtiy", Toast.LENGTH_SHORT).show();
 
     }
+
+
+    private class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHolder> {
+
+
+        @Override
+        public ImageSampleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            final ImageView imageView = new ImageView(parent.getContext());
+            return new ImageSampleViewHolder(imageView);
+        }
+
+        @Override
+        public void onBindViewHolder(ImageSampleViewHolder holder, int position) {
+
+            final String path = mSelectedImages.get(position).path;
+            loadImage(path, holder.thumbnail);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mSelectedImages.size();
+        }
+
+
+        private void loadImage(final String path, final ImageView imageView) {
+            imageView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 440));
+
+            Glide.with(MainActivity.this)
+                    .load(path)
+                    .asBitmap()
+                    .into(imageView);
+
+
+        }
+
+
+    }
+
+    class ImageSampleViewHolder extends RecyclerView.ViewHolder {
+
+        protected ImageView thumbnail;
+
+        public ImageSampleViewHolder(View itemView) {
+            super(itemView);
+            thumbnail = (ImageView) itemView;
+        }
+    }
+
+
+
 
 
     // on activity result for old gallery and camera code (possibly obsolete
