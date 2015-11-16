@@ -106,8 +106,8 @@
     <orderEntry type="library" exported="" name="itextpdf-5.5.7" level="project" />
     <orderEntry type="library" exported="" name="eventbus-2.4.0" level="project" />
     <orderEntry type="library" exported="" name="commons-lang3-3.3.2" level="project" />
-    <orderEntry type="library" exported="" name="itext-pdfa-5.5.7" level="project" />
     <orderEntry type="library" exported="" name="robospice-cache-1.4.14" level="project" />
+    <orderEntry type="library" exported="" name="itext-pdfa-5.5.7" level="project" />
     <orderEntry type="library" exported="" name="fab-1.6.1" level="project" />
     <orderEntry type="library" exported="" name="recyclerview-v7-23.1.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-23.1.0" level="project" />

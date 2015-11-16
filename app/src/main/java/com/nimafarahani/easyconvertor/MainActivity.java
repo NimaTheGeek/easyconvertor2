@@ -65,34 +65,15 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
     //opening gallery page
     public void btnGallHandler(View view) {
-        //Intent i = new Intent(getApplicationContext(), gallerySelection.class);
-        //startActivity(i);
 
-        // code for old image selection
-        /*
-        Intent i = new Intent();
-        i.setType("image/*");
-        i.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(i, "Select a Picture!"), PICK_IMAGE_REQUEST_CODE);
-        */
-
-        //code for new gallery
         pickImages();
-
-    }
-
-    //opening camera page
-    public void btnCamHandler(View view) {
-
-        Intent x = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(x, TAKE_PICTURE_REQUEST_CODE);
 
     }
 
     private void pickImages(){
 
         //You can change many settings in builder like limit , Pick mode and colors
-        new Picker.Builder(this, this ,R.style.AppTheme_NoActionBar)
+        new Picker.Builder(this, this ,R.style.AppTheme)
                 .build()
                 .startActivity();
 
@@ -104,20 +85,20 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         createPdf();
     }
 
-    // listeners for multi image picker
-    @Override
-    public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
-        // call adaptor here for listview
+        // listeners for multi image picker
+        @Override
+        public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
+            // call adaptor here for listview
 
-        mSelectedImages = images;
-        setupImageSamples();
-        Log.d(TAG, "Picked images  " + images.toString());
-    }
+            mSelectedImages = images;
+            setupImageSamples();
+            Log.d(TAG, "Picked images  " + images.toString());
+        }
 
 
-    private void setupImageSamples() {
-        mImageSampleRecycler.setAdapter(new ImageSamplesAdapter());
-    }
+        private void setupImageSamples() {
+            mImageSampleRecycler.setAdapter(new ImageSamplesAdapter());
+        }
 
     @Override
     public void onCancel() {
