@@ -63,13 +63,10 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         setContentView(R.layout.activity_main);
         mImageSampleRecycler = (RecyclerView) findViewById(R.id.my_recycler_view);
 
-
-
         setupRecycler();
 
-
         //new stuff
-        myAdapter = new ImageSamplesAdapter(mSelectedImages);
+        myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
 
 
@@ -82,42 +79,16 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         gridLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mImageSampleRecycler.setLayoutManager(gridLayoutManager);
 
-
-
-
     }
 
-    public void onClickPickImageSingle(View view) {
-
-        new Picker.Builder(this, this, R.style.MIP_theme)
-                .setPickMode(Picker.PickMode.SINGLE_IMAGE)
-                .build()
-                .startActivity();
-    }
-
-    public void onClickPickImageMultipleWithLimit(View view) {
-        new Picker.Builder(this, this, R.style.MIP_theme)
-                .setPickMode(Picker.PickMode.MULTIPLE_IMAGES)
-                .setLimit(6)
-                .build()
-                .startActivity();
-    }
-
-    public void onPickImageMultipleInfinite(View view) {
-        new Picker.Builder(this, this, R.style.MIP_theme)
-                .setPickMode(Picker.PickMode.MULTIPLE_IMAGES)
-                .build()
-                .startActivity();
-
-    }
-
-    //opening gallery page
+    //Button Listener for opening gallery page
     public void btnGallHandler(View view) {
 
         pickImages();
 
     }
 
+    // Starts the multi image picker gallery
     private void pickImages(){
 
         //You can change many settings in builder like limit , Pick mode and colors
@@ -127,139 +98,38 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
     }
 
+    // listeners for multi image picker
+    // When the selected pictures are returned from picker gallery...
+    @Override
+    public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
+        // call adaptor here for listview
+
+        mSelectedImages = images;
+        //setupImageSamples();
+        Log.d(TAG, "Picked images  " + images.toString());
+
+        myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
+        mImageSampleRecycler.setAdapter(myAdapter);
+    }
+
+    // When there are no picture selected from the picker gallery...
+    @Override
+    public void onCancel() {
+        //Log.i(TAG, "User canceled picker activity");
+        Toast.makeText(this, "User canceled picker activity", Toast.LENGTH_SHORT).show();
+
+    }
+
     // button listener for converting images to pdf file
     public void onConvertPdfClick(View view) throws DocumentException, java.io.IOException
     {
         createPdf();
-    }
-
-        // listeners for multi image picker
-        @Override
-        public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
-            // call adaptor here for listview
-
-            mSelectedImages = images;
-            //setupImageSamples();
-            Log.d(TAG, "Picked images  " + images.toString());
-
-            myAdapter = new ImageSamplesAdapter(mSelectedImages);
-            mImageSampleRecycler.setAdapter(myAdapter);
-        }
-
-/*
-        private void setupImageSamples() {
-            mImageSampleRecycler.setAdapter(new ImageSamplesAdapter());
-        }
-*/
-    @Override
-    public void onCancel() {
-        Log.i(TAG, "User canceled picker activity");
-        Toast.makeText(this, "User canceld picker activtiy", Toast.LENGTH_SHORT).show();
-
-    }
-
-
-    private class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHolder> {
-
-
-        private ArrayList<ImageEntry> mSelectedImages;
-        public ImageSamplesAdapter(ArrayList<ImageEntry> myDataset){
-            mSelectedImages = myDataset;
-        }
-
-
-        @Override
-        public ImageSampleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            final ImageView imageView = new ImageView(parent.getContext());
-            return new ImageSampleViewHolder(imageView);
-        }
-
-        @Override
-        public void onBindViewHolder(ImageSampleViewHolder holder, int position) {
-
-            final String path = mSelectedImages.get(position).path;
-            loadImage(path, holder.thumbnail);
-        }
-
-        @Override
-        public int getItemCount() {
-            if (mSelectedImages == null)
-                return 0;
-            else
-                return mSelectedImages.size();
-        }
-
-
-        private void loadImage(final String path, final ImageView imageView) {
-            imageView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 440));
-
-            Glide.with(MainActivity.this)
-                    .load(path)
-                    .asBitmap()
-                    .into(imageView);
-
-
-        }
-
-
-    }
-
-    class ImageSampleViewHolder extends RecyclerView.ViewHolder {
-
-        protected ImageView thumbnail;
-
-        public ImageSampleViewHolder(View itemView) {
-            super(itemView);
-            thumbnail = (ImageView) itemView;
-        }
+        Toast.makeText(this, "Pdf file created", Toast.LENGTH_SHORT).show();
     }
 
 
 
-
-
-    // on activity result for old gallery and camera code (possibly obsolete
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null )
-        {
-            Uri uri = data.getData();
-
-            if (imageList == null)
-                imageList = new LinkedList<>();
-
-            imageList.add(uri);
-            Log.i(TAG, "This is the Image name: " + uri.getLastPathSegment());
-            Log.i(TAG, "This the length of the list: " + imageList.size());
-
-
-        } else if (requestCode == TAKE_PICTURE_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null )
-        {
-            // data.getData() is null here
-            Uri uri = data.getData();
-
-            if (imageList == null)
-                imageList = new LinkedList<>();
-
-            imageList.add(uri);
-
-            Log.e(TAG, "Added image from camera!");
-        }
-        else {
-            Log.e(TAG, "oops");
-            Log.e(TAG, Integer.toString(requestCode));
-            Log.e(TAG, Integer.toString(resultCode) + " " +  Integer.toString(RESULT_OK) + " " + Integer.toString(RESULT_CANCELED));
-            Log.e(TAG, data == null ? "data is null" : "data is not null");
-            //Log.e(TAG, data.getData() == null ? "data.getData() is null" : "data.getData() is not null");
-
-        }
-
-    }
-
-
-
+    // function that converts image data into a pdf file
     public void createPdf() throws  DocumentException, java.io.IOException
     {
         File pdfFolder = new File(Environment.getExternalStorageDirectory(), "EasyConvert"); // check this warning, may be important for diff API levels
@@ -327,4 +197,49 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
         }
     }
+
+
+
+    // on activity result for old gallery and camera code (possibly obsolete)
+    /*
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null )
+        {
+            Uri uri = data.getData();
+
+            if (imageList == null)
+                imageList = new LinkedList<>();
+
+            imageList.add(uri);
+            Log.i(TAG, "This is the Image name: " + uri.getLastPathSegment());
+            Log.i(TAG, "This the length of the list: " + imageList.size());
+
+
+        } else if (requestCode == TAKE_PICTURE_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null )
+        {
+            // data.getData() is null here
+            Uri uri = data.getData();
+
+            if (imageList == null)
+                imageList = new LinkedList<>();
+
+            imageList.add(uri);
+
+            Log.e(TAG, "Added image from camera!");
+        }
+        else {
+            Log.e(TAG, "oops");
+            Log.e(TAG, Integer.toString(requestCode));
+            Log.e(TAG, Integer.toString(resultCode) + " " +  Integer.toString(RESULT_OK) + " " + Integer.toString(RESULT_CANCELED));
+            Log.e(TAG, data == null ? "data is null" : "data is not null");
+            //Log.e(TAG, data.getData() == null ? "data.getData() is null" : "data.getData() is not null");
+
+        }
+
+    }
+    */
+
 }
