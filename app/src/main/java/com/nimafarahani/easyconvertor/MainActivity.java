@@ -62,7 +62,16 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mImageSampleRecycler = (RecyclerView) findViewById(R.id.my_recycler_view);
+
+
+
         setupRecycler();
+
+
+        //new stuff
+        myAdapter = new ImageSamplesAdapter(mSelectedImages);
+        mImageSampleRecycler.setAdapter(myAdapter);
+
 
 
     }
@@ -73,9 +82,6 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         gridLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mImageSampleRecycler.setLayoutManager(gridLayoutManager);
 
-        //new stuff
-        myAdapter = new ImageSamplesAdapter(myDataset);
-        mImageSampleRecycler.setAdapter(myAdapter);
 
 
 
@@ -135,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
             mSelectedImages = images;
             //setupImageSamples();
             Log.d(TAG, "Picked images  " + images.toString());
+
+            myAdapter = new ImageSamplesAdapter(mSelectedImages);
+            mImageSampleRecycler.setAdapter(myAdapter);
         }
 
 /*
@@ -153,9 +162,9 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHolder> {
 
 
-        private String[] mDataset;
-        public ImageSamplesAdapter(String[] myDataset){
-            mDataset = myDataset;
+        private ArrayList<ImageEntry> mSelectedImages;
+        public ImageSamplesAdapter(ArrayList<ImageEntry> myDataset){
+            mSelectedImages = myDataset;
         }
 
 
@@ -174,7 +183,10 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
         @Override
         public int getItemCount() {
-            return mSelectedImages.size();
+            if (mSelectedImages == null)
+                return 0;
+            else
+                return mSelectedImages.size();
         }
 
 
