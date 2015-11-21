@@ -9,10 +9,11 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.provider.MediaStore.Files.FileColumns;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageView;
@@ -27,8 +28,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import net.yazeed44.imagepicker.model.ImageEntry;
 import net.yazeed44.imagepicker.util.Picker;
-//=======
-import com.itextpdf.text.Document;
 
 //>>>>>>> Stashed changes
 
@@ -54,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private static LinkedList<Uri> imageList;
     private ArrayList<ImageEntry> mSelectedImages;
     private RecyclerView mImageSampleRecycler;
+    private RecyclerView.Adapter myAdapter;
 
 
 
@@ -61,6 +61,48 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mImageSampleRecycler = (RecyclerView) findViewById(R.id.my_recycler_view);
+        setupRecycler();
+
+
+    }
+
+    private void setupRecycler() {
+
+        final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.num_columns_image_samples));
+        gridLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mImageSampleRecycler.setLayoutManager(gridLayoutManager);
+
+        //new stuff
+        myAdapter = new ImageSamplesAdapter(myDataset);
+        mImageSampleRecycler.setAdapter(myAdapter);
+
+
+
+    }
+
+    public void onClickPickImageSingle(View view) {
+
+        new Picker.Builder(this, this, R.style.MIP_theme)
+                .setPickMode(Picker.PickMode.SINGLE_IMAGE)
+                .build()
+                .startActivity();
+    }
+
+    public void onClickPickImageMultipleWithLimit(View view) {
+        new Picker.Builder(this, this, R.style.MIP_theme)
+                .setPickMode(Picker.PickMode.MULTIPLE_IMAGES)
+                .setLimit(6)
+                .build()
+                .startActivity();
+    }
+
+    public void onPickImageMultipleInfinite(View view) {
+        new Picker.Builder(this, this, R.style.MIP_theme)
+                .setPickMode(Picker.PickMode.MULTIPLE_IMAGES)
+                .build()
+                .startActivity();
+
     }
 
     //opening gallery page
@@ -91,15 +133,15 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
             // call adaptor here for listview
 
             mSelectedImages = images;
-            setupImageSamples();
+            //setupImageSamples();
             Log.d(TAG, "Picked images  " + images.toString());
         }
 
-
+/*
         private void setupImageSamples() {
             mImageSampleRecycler.setAdapter(new ImageSamplesAdapter());
         }
-
+*/
     @Override
     public void onCancel() {
         Log.i(TAG, "User canceled picker activity");
@@ -109,6 +151,12 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
 
     private class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHolder> {
+
+
+        private String[] mDataset;
+        public ImageSamplesAdapter(String[] myDataset){
+            mDataset = myDataset;
+        }
 
 
         @Override
