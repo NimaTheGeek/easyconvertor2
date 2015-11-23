@@ -1,5 +1,8 @@
 package com.nimafarahani.easyconvertor;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -18,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageView;
 //<<<<<<< Updated upstream
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
         myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
+        //myAdapter.notifyDataSetChanged();
     }
 
     // When there are no picture selected from the picker gallery...
@@ -134,13 +140,19 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     {
         File pdfFolder = new File(Environment.getExternalStorageDirectory(), "EasyConvert"); // check this warning, may be important for diff API levels
 
+        //ProgressBar progress = (ProgressBar) findViewById(R.id.progressBar);
+
+
         if (!pdfFolder.exists()) {
             pdfFolder.mkdirs();
             Log.i(TAG, "Folder successfully created");
         }
 
-        if (imageList != null)
+        if (mSelectedImages != null)
         {
+
+           // progress.setVisibility(View.VISIBLE);
+
             Date date = new Date();
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(date);
 
@@ -155,11 +167,11 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
             document.open();
             //document.add(new Paragraph("~~~~Hello World!!~~~~"));
-            for (int i = 0; i < imageList.size(); i++)
+            for (int i = 0; i < mSelectedImages.size(); i++)
             {
 
                 // create bitmap from URI in our list
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageList.get(i));
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.fromFile(new File(mSelectedImages.get(i).path)) );
 
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -188,14 +200,68 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                 document.add(img);
                 document.newPage();
 
+                float fractionalProgress = (i+1)/mSelectedImages.size() * 100;
+
+               // progress.setProgress(Math.round(fractionalProgress));
+
 
 
             }
-            imageList = null;
+
+            //progress.cancel();
+            mSelectedImages = null;
             document.close();
-           // promptForNextAction();
+            promptForNextAction();
+
+            myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
+            mImageSampleRecycler.setAdapter(myAdapter);
+
+            //progress.setVisibility(View.GONE);
 
         }
+    }
+
+    private void viewPdf(){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(myPDF), "application/pdf");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(intent);
+    }
+
+    private void emailNote()
+    {
+        Intent email = new Intent(Intent.ACTION_SEND);
+        //email.putExtra(Intent.EXTRA_SUBJECT,mSubjectEditText.getText().toString());
+        //email.putExtra(Intent.EXTRA_TEXT, mBodyEditText.getText().toString());
+        Uri uri = Uri.parse(myPDF.getAbsolutePath());
+        email.putExtra(Intent.EXTRA_STREAM, uri);
+        email.setType("message/rfc822");
+        startActivity(email);
+    }
+
+    public void promptForNextAction()
+    {
+        final String[] options = { "email", "preview",
+                "cancel" };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("PDF Saved, What Next?");
+
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (options[which].equals("email")){
+                    emailNote();
+                }else if (options[which].equals("preview")){
+                    viewPdf();
+                }else if (options[which].equals("cancel")){
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        builder.show();
+
     }
 
 
