@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,14 +17,17 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.EditText;
 import android.widget.ImageView;
 //<<<<<<< Updated upstream
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 import com.bumptech.glide.Glide;
 import com.itextpdf.text.Document;
@@ -39,6 +43,7 @@ import net.yazeed44.imagepicker.util.Picker;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,9 +61,11 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private static final int TAKE_PICTURE_REQUEST_CODE = 2;
     private File myPDF;
     private static LinkedList<Uri> imageList;
-    private ArrayList<ImageEntry> mSelectedImages;
+    private ArrayList<ImageEntry> mSelectedImages = new ArrayList<ImageEntry>();
     private RecyclerView mImageSampleRecycler;
     private RecyclerView.Adapter myAdapter;
+    private ViewSwitcher switcher;
+    File pdfFolder;
 
 
 
@@ -66,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        switcher = (ViewSwitcher) findViewById(R.id.profileSwitcher);
+
         mImageSampleRecycler = (RecyclerView) findViewById(R.id.my_recycler_view);
 
         setupRecycler();
@@ -115,7 +124,10 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
         myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
-        //myAdapter.notifyDataSetChanged();
+
+        switcher.showNext();
+
+        myAdapter.notifyDataSetChanged();
     }
 
     // When there are no picture selected from the picker gallery...
@@ -129,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     // button listener for converting images to pdf file
     public void onConvertPdfClick(View view) throws DocumentException, java.io.IOException
     {
+
         createPdf();
         Toast.makeText(this, "Pdf file created", Toast.LENGTH_SHORT).show();
     }
@@ -138,86 +151,160 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     // function that converts image data into a pdf file
     public void createPdf() throws  DocumentException, java.io.IOException
     {
-        File pdfFolder = new File(Environment.getExternalStorageDirectory(), "EasyConvert"); // check this warning, may be important for diff API levels
 
-        //ProgressBar progress = (ProgressBar) findViewById(R.id.progressBar);
+       try {
+
+           pdfFolder = new File(Environment.getExternalStorageDirectory(), "EasyConvert"); // check this warning, may be important for diff API levels
+
+           //ProgressBar progress = (ProgressBar) findViewById(R.id.progressBar);
 
 
-        if (!pdfFolder.exists()) {
-            pdfFolder.mkdirs();
-            Log.i(TAG, "Folder successfully created");
-        }
+           if (!pdfFolder.exists()) {
+               pdfFolder.mkdirs();
+               Log.i(TAG, "Folder successfully created");
+           }
 
-        if (mSelectedImages != null)
-        {
+           if (mSelectedImages != null) {
 
-           // progress.setVisibility(View.VISIBLE);
+               // progress.setVisibility(View.VISIBLE);
 
-            Date date = new Date();
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(date);
-
-            myPDF = new File(pdfFolder + "/" + timeStamp + ".pdf");
-
-            OutputStream output = new FileOutputStream(myPDF);
-
-            Document document = new Document();
-            PdfWriter.getInstance(document, output);
-
-            long startTime, estimatedTime;
-
-            document.open();
-            //document.add(new Paragraph("~~~~Hello World!!~~~~"));
-            for (int i = 0; i < mSelectedImages.size(); i++)
-            {
-
-                // create bitmap from URI in our list
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.fromFile(new File(mSelectedImages.get(i).path)) );
-
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-                startTime = System.currentTimeMillis();
-
-                // changed from png to jpeg, lowered processing time greatly
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-
-                estimatedTime = System.currentTimeMillis() - startTime;
-
-                Log.e(TAG, "compressed image into stream: " + estimatedTime);
-
-                byte[] byteArray = stream.toByteArray();
-
-                // instantiate itext image
-                com.itextpdf.text.Image img = com.itextpdf.text.Image.getInstance(byteArray);
-
-                //img.scalePercent(40, 40);
-                //img.setAlignment(Element.ALIGN_CENTER);
-
-                img.scaleAbsolute(PageSize.LETTER.getWidth(), PageSize.LETTER.getHeight());
-                img.setAbsolutePosition(
-                        (PageSize.LETTER.getWidth() - img.getScaledWidth()) / 2,
-                        (PageSize.LETTER.getHeight() - img.getScaledHeight()) / 2
-                );
-                document.add(img);
-                document.newPage();
-
-                float fractionalProgress = (i+1)/mSelectedImages.size() * 100;
-
-               // progress.setProgress(Math.round(fractionalProgress));
+               Date date = new Date();
+               final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(date);
+               myPDF = new File(pdfFolder + "/" + timeStamp + ".pdf");
 
 
 
-            }
 
-            //progress.cancel();
-            mSelectedImages = null;
-            document.close();
-            promptForNextAction();
+               OutputStream output = new FileOutputStream(myPDF);
 
-            myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
-            mImageSampleRecycler.setAdapter(myAdapter);
+               Document document = new Document();
+               PdfWriter.getInstance(document, output);
 
-            //progress.setVisibility(View.GONE);
+               long startTime, estimatedTime;
 
+               document.open();
+               //document.add(new Paragraph("~~~~Hello World!!~~~~"));
+               for (int i = 0; i < mSelectedImages.size(); i++) {
+
+                   // create bitmap from URI in our list
+                   Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.fromFile(new File(mSelectedImages.get(i).path)));
+
+                   ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+                   startTime = System.currentTimeMillis();
+
+                   // changed from png to jpeg, lowered processing time greatly
+                   bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+                   estimatedTime = System.currentTimeMillis() - startTime;
+
+                   Log.e(TAG, "compressed image into stream: " + estimatedTime);
+
+                   byte[] byteArray = stream.toByteArray();
+
+                   // instantiate itext image
+                   com.itextpdf.text.Image img = com.itextpdf.text.Image.getInstance(byteArray);
+
+                   //img.scalePercent(40, 40);
+                   //img.setAlignment(Element.ALIGN_CENTER);
+
+                   img.scaleAbsolute(PageSize.LETTER.getWidth(), PageSize.LETTER.getHeight());
+                   img.setAbsolutePosition(
+                           (PageSize.LETTER.getWidth() - img.getScaledWidth()) / 2,
+                           (PageSize.LETTER.getHeight() - img.getScaledHeight()) / 2
+                   );
+                   document.add(img);
+                   document.newPage();
+
+                   float fractionalProgress = (i + 1) / mSelectedImages.size() * 100;
+
+                   // progress.setProgress(Math.round(fractionalProgress));
+
+
+               }
+
+               //progress.cancel();
+               mSelectedImages = null;
+               document.close();
+
+
+               //start renaming
+               LayoutInflater li = LayoutInflater.from(MainActivity.this);
+               View promptsView = li.inflate(R.layout.layout, null);
+
+               AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                       MainActivity.this);
+
+               // set prompts.xml to alertdialog builder
+               alertDialogBuilder.setView(promptsView);
+
+               final EditText userInput = (EditText) promptsView
+                       .findViewById(R.id.editTextDialogUserInput);
+
+               // set dialog message
+               alertDialogBuilder
+                       .setCancelable(false)
+                       .setPositiveButton("OK",
+                               new DialogInterface.OnClickListener() {
+                                   public void onClick(DialogInterface dialog,int id) {
+                                       // get user input and set it to result
+                                       // edit text
+
+                                       String fileName = userInput.getText().toString();
+                                       //myPDF = new File(pdfFolder + "/" + fileName + ".pdf");
+                                       //myPDF.renameTo(userInput.getText().toString());
+                                   }
+                               })
+                       .setNegativeButton("Cancel",
+                               new DialogInterface.OnClickListener() {
+                                   public void onClick(DialogInterface dialog,int id) {
+                                       dialog.cancel();
+
+
+                                   }
+                               });
+
+               // create alert dialog
+               //AlertDialog alertDialog = alertDialogBuilder.create();
+
+               // show it
+
+               Log.e(TAG, "Before alertdialogue.show");
+
+               alertDialogBuilder.show();
+
+               promptForNextAction();
+
+
+               try {
+                   Thread.sleep(5000);
+               }catch (InterruptedException e)
+               {
+                   e.printStackTrace();
+               }
+               Log.e(TAG, "After alertdialogue.show, and before promptfornextaction");
+
+               Log.e(TAG, "prompt for next action has completed");
+
+               myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
+               mImageSampleRecycler.setAdapter(myAdapter);
+
+               //progress.setVisibility(View.GONE);
+
+           }
+       }catch (DocumentException e){
+           e.printStackTrace();
+           myPDF.delete();
+
+           // check if pdf file exists
+           // if so, remove pdf file
+
+       }
+        catch (IOException e){
+            e.printStackTrace();
+            myPDF.delete();
+            // check if pdf file exists
+            // if so, remove pdf file
         }
     }
 
@@ -250,17 +337,17 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (options[which].equals("email")){
+                if (options[which].equals("email")) {
                     emailNote();
-                }else if (options[which].equals("preview")){
+                } else if (options[which].equals("preview")) {
                     viewPdf();
-                }else if (options[which].equals("cancel")){
+                } else if (options[which].equals("cancel")) {
                     dialog.dismiss();
                 }
             }
         });
 
-        builder.show();
+        //builder.show();
 
     }
 
