@@ -321,8 +321,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private void emailNote()
     {
         Intent email = new Intent(Intent.ACTION_SEND);
-        email.putExtra(Intent.EXTRA_SUBJECT,"hello world");
-        email.putExtra(Intent.EXTRA_TEXT, "hello world");
+        //email.putExtra(Intent.EXTRA_SUBJECT,"hello world");
+        //email.putExtra(Intent.EXTRA_TEXT, "hello world");
         Uri uri = Uri.parse(myPDF.getAbsolutePath());
         email.putExtra(Intent.EXTRA_STREAM, uri);
         email.setType("message/rfc822");
