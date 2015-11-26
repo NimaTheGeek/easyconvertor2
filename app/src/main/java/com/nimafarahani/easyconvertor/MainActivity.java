@@ -125,7 +125,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
 
-        switcher.showNext();
+        if (switcher.getNextView() ==  findViewById(R.id.myRelativeLayout1) )
+            switcher.showNext();
 
         myAdapter.notifyDataSetChanged();
     }
@@ -252,13 +253,20 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
                                        String fileName = userInput.getText().toString();
                                        //myPDF = new File(pdfFolder + "/" + fileName + ".pdf");
-                                       //myPDF.renameTo(userInput.getText().toString());
+                                       File newFile = new File(pdfFolder + "/" + fileName + ".pdf");
+                                       boolean result = myPDF.renameTo(newFile);
+
+                                       myPDF = newFile;
+
+                                       Log.w(TAG, "myPDF renamed to: " + myPDF.toString() );
+                                       promptForNextAction();
                                    }
                                })
                        .setNegativeButton("Cancel",
                                new DialogInterface.OnClickListener() {
                                    public void onClick(DialogInterface dialog,int id) {
                                        dialog.cancel();
+                                       promptForNextAction();
 
 
                                    }
@@ -273,15 +281,9 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
                alertDialogBuilder.show();
 
-               promptForNextAction();
+              // promptForNextAction();
 
 
-               try {
-                   Thread.sleep(5000);
-               }catch (InterruptedException e)
-               {
-                   e.printStackTrace();
-               }
                Log.e(TAG, "After alertdialogue.show, and before promptfornextaction");
 
                Log.e(TAG, "prompt for next action has completed");
@@ -310,6 +312,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
     private void viewPdf(){
         Intent intent = new Intent(Intent.ACTION_VIEW);
+        Log.w(TAG, "Opening:  " + myPDF.toString());
         intent.setDataAndType(Uri.fromFile(myPDF), "application/pdf");
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
@@ -318,8 +321,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private void emailNote()
     {
         Intent email = new Intent(Intent.ACTION_SEND);
-        //email.putExtra(Intent.EXTRA_SUBJECT,mSubjectEditText.getText().toString());
-        //email.putExtra(Intent.EXTRA_TEXT, mBodyEditText.getText().toString());
+        email.putExtra(Intent.EXTRA_SUBJECT,"hello world");
+        email.putExtra(Intent.EXTRA_TEXT, "hello world");
         Uri uri = Uri.parse(myPDF.getAbsolutePath());
         email.putExtra(Intent.EXTRA_STREAM, uri);
         email.setType("message/rfc822");
@@ -347,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
             }
         });
 
-        //builder.show();
+        builder.show();
 
     }
 
