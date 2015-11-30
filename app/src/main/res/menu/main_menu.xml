@@ -18,10 +18,12 @@
 
         <menu>
             <item android:id="@+id/action_portrait"
-            android:title="portrait"/>
+            android:title="portrait"
+                android:checkable="true"/>
 
             <item android:id="@+id/action_landscape"
-                android:title="landscape"/>
+                android:title="landscape"
+                android:checkable="true"/>
         </menu>
 
     </item>

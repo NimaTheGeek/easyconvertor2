@@ -61,6 +61,11 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private ViewSwitcher switcher;
     File pdfFolder;
 
+    private MenuItem mPortraitMenuItem;
+    private MenuItem mLandscapeMenuItem;
+    private boolean isPortrait = true;
+
+
 
 
     @Override
@@ -89,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        mPortraitMenuItem = menu.findItem(R.id.action_portrait);
+        mLandscapeMenuItem = menu.findItem(R.id.action_landscape);
+
+        mPortraitMenuItem.setChecked(true);
+
         //menu.add(1, 1, 0, "Open the file");
 
         //menu.add(1, 2, 1, "Save the file");
@@ -113,6 +123,27 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                 mSelectedImages = null;
                 myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
                 mImageSampleRecycler.setAdapter(myAdapter);
+                return true;
+
+            case R.id.action_portrait:
+                if (mLandscapeMenuItem.isChecked()) {
+                    item.setChecked(true);
+                    mLandscapeMenuItem.setChecked(false);
+                    isPortrait = true;
+                }
+
+
+                return true;
+
+            case R.id.action_landscape:
+                if (mPortraitMenuItem.isChecked()) {
+                    item.setChecked(true);
+                    mPortraitMenuItem.setChecked(false);
+                    isPortrait = false;
+                }
+
+
+
                 return true;
 
             default:
@@ -217,8 +248,13 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
 
                OutputStream output = new FileOutputStream(myPDF);
+               Document document;
 
-               Document document = new Document();
+               if (isPortrait)
+                   document = new Document(PageSize.A4, 50, 50, 50, 50);
+               else
+                   document = new Document(PageSize.A4.rotate(), 50, 50, 50, 50);
+
                PdfWriter.getInstance(document, output);
 
                long startTime, estimatedTime;
@@ -249,11 +285,25 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                    //img.scalePercent(40, 40);
                    //img.setAlignment(Element.ALIGN_CENTER);
 
-                   img.scaleAbsolute(PageSize.LETTER.getWidth(), PageSize.LETTER.getHeight());
-                   img.setAbsolutePosition(
-                           (PageSize.LETTER.getWidth() - img.getScaledWidth()) / 2,
-                           (PageSize.LETTER.getHeight() - img.getScaledHeight()) / 2
-                   );
+                   //img.scaleAbsolute(PageSize.A4.getWidth(), PageSize.A4.getHeight());
+
+
+
+                   if (isPortrait) {
+                       img.scaleToFit(PageSize.A4);
+                       img.setAbsolutePosition(
+                               (PageSize.A4.getWidth() - img.getScaledWidth()) / 2,
+                               (PageSize.A4.getHeight() - img.getScaledHeight()) / 2
+                       );
+                   }
+                   else
+                   {
+                       img.scaleToFit(PageSize.A4.rotate());
+                       img.setAbsolutePosition(
+                               (PageSize.A4.rotate().getWidth() - img.getScaledWidth()) / 2,
+                               (PageSize.A4.rotate().getHeight() - img.getScaledHeight()) / 2
+                               );
+                   }
                    document.add(img);
                    document.newPage();
 
