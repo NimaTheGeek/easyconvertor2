@@ -1,35 +1,29 @@
 package com.nimafarahani.easyconvertor;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.EditText;
-import android.widget.ImageView;
 //<<<<<<< Updated upstream
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
-import com.bumptech.glide.Glide;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
@@ -61,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     private static final int TAKE_PICTURE_REQUEST_CODE = 2;
     private File myPDF;
     private static LinkedList<Uri> imageList;
-    private ArrayList<ImageEntry> mSelectedImages = new ArrayList<ImageEntry>();
+    private ArrayList<ImageEntry> mSelectedImages;// = new ArrayList<ImageEntry>();
     private RecyclerView mImageSampleRecycler;
     private RecyclerView.Adapter myAdapter;
     private ViewSwitcher switcher;
@@ -83,8 +77,50 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
 
 
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        //menu.add(1, 1, 0, "Open the file");
+
+        //menu.add(1, 2, 1, "Save the file");
+
+       // menu.add(1, 3, 2, "Close the file");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_gallery:
+                // opens up gallery image picker to add additional images to recycle view
+                pickImages();
+                return true;
+
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+            case R.id.action_clear:
+                // Removes all the images from the recycle view
+                mSelectedImages = null;
+                myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
+                mImageSampleRecycler.setAdapter(myAdapter);
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     private void setupRecycler() {
@@ -118,7 +154,11 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
         // call adaptor here for listview
 
-        mSelectedImages = images;
+        if (mSelectedImages == null)
+            mSelectedImages = images;
+        else
+            mSelectedImages.addAll(images);
+
         //setupImageSamples();
         Log.d(TAG, "Picked images  " + images.toString());
 
