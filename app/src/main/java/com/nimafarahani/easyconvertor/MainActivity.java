@@ -1,6 +1,7 @@
 package com.nimafarahani.easyconvertor;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -224,6 +225,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     public void createPdf() throws  DocumentException, java.io.IOException
     {
 
+
+
        try {
 
            pdfFolder = new File(Environment.getExternalStorageDirectory(), "EasyConvert"); // check this warning, may be important for diff API levels
@@ -261,6 +264,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
                document.open();
                //document.add(new Paragraph("~~~~Hello World!!~~~~"));
+
+
                for (int i = 0; i < mSelectedImages.size(); i++) {
 
                    // create bitmap from URI in our list
@@ -309,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
                    float fractionalProgress = (i + 1) / mSelectedImages.size() * 100;
 
-                   // progress.setProgress(Math.round(fractionalProgress));
+
 
 
                }
@@ -317,6 +322,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                //progress.cancel();
                mSelectedImages = null;
                document.close();
+
 
 
                //start renaming
@@ -369,7 +375,10 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
                Log.e(TAG, "Before alertdialogue.show");
 
+
                alertDialogBuilder.show();
+
+
 
               // promptForNextAction();
 

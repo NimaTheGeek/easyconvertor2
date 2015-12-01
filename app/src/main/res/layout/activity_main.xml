@@ -54,19 +54,6 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:id="@+id/myRelativeLayout1">
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/galleryButton1"
-            android:src="@drawable/camera_48"
-            android:background="@null"
-            android:clickable="true"
-            android:onClick="btnGallHandler"
-            android:layout_marginLeft="94dp"
-            android:layout_marginStart="94dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -78,11 +65,9 @@
 
 
             android:src="@drawable/icon2561"
-            android:layout_below="@+id/my_recycler_view"
-            android:layout_toRightOf="@+id/galleryButton1"
-            android:layout_toEndOf="@+id/galleryButton1"
-            android:layout_marginLeft="98dp"
-            android:layout_marginStart="98dp" />
+
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
 
 
 
@@ -91,8 +76,9 @@
             android:scrollbars="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/galleryButton1"
-            android:layout_below="@+id/my_toolbar" />
+
+            android:layout_below="@+id/my_toolbar"
+            android:layout_above="@+id/convertButton" />
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/my_toolbar"
