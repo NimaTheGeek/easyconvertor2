@@ -1,3 +1,14 @@
+/*
+    Daniel Sledd
+    David Clay
+    Nima Farahani
+
+    **This is the Main Activity**
+    * implements PickListener which provides listeners for the mutliImage pick gallery
+
+ */
+
+
 package com.nimafarahani.easyconvertor;
 
 import android.app.AlertDialog;
@@ -68,18 +79,20 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
 
 
-
+    // initial code to initialize variables, set up up the recycle view and the toolbar
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // switcher which will be used to switch to a separate layout after the gallery button is pressed
         switcher = (ViewSwitcher) findViewById(R.id.profileSwitcher);
 
         mImageSampleRecycler = (RecyclerView) findViewById(R.id.my_recycler_view);
 
         setupRecycler();
 
-        //new stuff
+        // recycle view must start with an adaptor or else layout will become onresponsive
         myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
 
@@ -91,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
     }
 
+    // Populate toolbar with items from the menu xml file
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -108,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         return true;
     }
 
+
+    // listener which executes code for when items in the option menu are selected
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -127,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                 return true;
 
             case R.id.action_portrait:
+                // check marks portrait and disables landscape
+                // changes flag
                 if (mLandscapeMenuItem.isChecked()) {
                     item.setChecked(true);
                     mLandscapeMenuItem.setChecked(false);
@@ -137,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                 return true;
 
             case R.id.action_landscape:
+                // check marks landscape and disables portrait
+                // changes flag
                 if (mPortraitMenuItem.isChecked()) {
                     item.setChecked(true);
                     mPortraitMenuItem.setChecked(false);
@@ -155,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
         }
     }
 
+    // initializes the recycle view with a grid layout with vertical orientation
     private void setupRecycler() {
 
         final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.num_columns_image_samples));
@@ -186,17 +207,22 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
     public void onPickedSuccessfully(ArrayList<ImageEntry> images) {
         // call adaptor here for listview
 
+        // if our global image array is empty, initialized it with the images returned from the multi-image picker gallery
         if (mSelectedImages == null)
             mSelectedImages = images;
+
+        // else, add additional images to the bottom of the list
         else
             mSelectedImages.addAll(images);
 
         //setupImageSamples();
         Log.d(TAG, "Picked images  " + images.toString());
 
+        // refresh adapter to display changes
         myAdapter = new ImageSamplesAdapter(mSelectedImages, MainActivity.this);
         mImageSampleRecycler.setAdapter(myAdapter);
 
+        // if we aren't on the second layout, switch. else do nothing
         if (switcher.getNextView() ==  findViewById(R.id.myRelativeLayout1) )
             switcher.showNext();
 
@@ -229,30 +255,34 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
 
        try {
 
+           // creates folder with a pathname including the android storage directory
            pdfFolder = new File(Environment.getExternalStorageDirectory(), "EasyConvert"); // check this warning, may be important for diff API levels
 
            //ProgressBar progress = (ProgressBar) findViewById(R.id.progressBar);
 
-
+            // if the directory doesn't already exist, create it
            if (!pdfFolder.exists()) {
                pdfFolder.mkdirs();
                Log.i(TAG, "Folder successfully created");
            }
 
+           // as long as we have images in the recycle view...
            if (mSelectedImages != null) {
 
                // progress.setVisibility(View.VISIBLE);
 
+               // name the pdf with the current timestamp by default
                Date date = new Date();
                final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(date);
                myPDF = new File(pdfFolder + "/" + timeStamp + ".pdf");
 
 
 
-
+               // point an output stream to our created document
                OutputStream output = new FileOutputStream(myPDF);
                Document document;
 
+               // create a document with difference page sizes depending on orientation
                if (isPortrait)
                    document = new Document(PageSize.A4, 50, 50, 50, 50);
                else
@@ -266,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                //document.add(new Paragraph("~~~~Hello World!!~~~~"));
 
 
+               // loop through all the images in the array
                for (int i = 0; i < mSelectedImages.size(); i++) {
 
                    // create bitmap from URI in our list
@@ -293,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                    //img.scaleAbsolute(PageSize.A4.getWidth(), PageSize.A4.getHeight());
 
 
-
+                    // scale the image and set it to center
                    if (isPortrait) {
                        img.scaleToFit(PageSize.A4);
                        img.setAbsolutePosition(
@@ -310,6 +341,8 @@ public class MainActivity extends AppCompatActivity implements Picker.PickListen
                                );
                    }
                    document.add(img);
+
+                   // add a new page to the document to maintain 1 image per page
                    document.newPage();
 
                    float fractionalProgress = (i + 1) / mSelectedImages.size() * 100;

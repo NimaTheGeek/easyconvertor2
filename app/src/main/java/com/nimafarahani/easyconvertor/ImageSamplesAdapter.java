@@ -15,6 +15,14 @@ import java.util.ArrayList;
 
 /**
  * Created by Sledd on 11/21/2015.
+ *
+ *
+ Daniel Sledd
+ David Clay
+ Nima Farahani
+
+ **This is the recycle view adapter**
+
  */
 public class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHolder>{
 
@@ -33,6 +41,7 @@ public class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHol
         return new ImageSampleViewHolder(imageView);
     }
 
+    // loads image thumbnails
     @Override
     public void onBindViewHolder(ImageSampleViewHolder holder, int position) {
 
@@ -40,6 +49,7 @@ public class ImageSamplesAdapter extends RecyclerView.Adapter<ImageSampleViewHol
         loadImage(path, holder.thumbnail);
     }
 
+    // count of selected images
     @Override
     public int getItemCount() {
         if (mSelectedImages == null)
